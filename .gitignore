@@ -35,6 +35,12 @@ instance/
 .pytest_cache/
 .coverage
 htmlcov/
+.cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.tox/
+.nox/
 # Live scenario campaign reports (make scenario-campaign)
 artifacts/
 
@@ -50,6 +56,21 @@ docs/pr47-neo4j-demo/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local configuration and environment tooling
+.envrc
+.direnv/
+*.local
+local.env
+
+# Temporary files and directories
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
 
 *.pid
 fastapi_session/

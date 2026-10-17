@@ -115,7 +115,7 @@ to provision the project.
 Run once per workspace before the first deploy:
 
 ```bash
-./scripts/bootstrap/setup-lakebase.sh --name ontobricks-demo --capacity CU_2
+./scripts/bootstrap/setup-lakebase.sh
 ```
 
 The script:

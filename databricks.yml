@@ -42,7 +42,6 @@
 
 bundle:
   name: ontobricks_dev_bundle
-
 # Resource definitions kept out of this file. Currently the serverless graph
 # analytics job (``resources/graph_analytics.job.yml``); the two apps are still
 # declared inline below. Per-instance targets (``dev-lakebase-<id>``)
@@ -50,13 +49,11 @@ bundle:
 # by ``scripts/deploy.sh`` from ``DEFAULT_INSTANCE_ID`` — that file is
 # gitignored and also matched by the include below.
 include:
-  - resources/*.yml
-
+- resources/*.yml
 workspace:
   # Sandbox path — distinct from any other ``ontobricks*`` bundle so
   # we cannot share/clobber sync state with the production apps.
-  root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${var.app_name}/${bundle.target}
-
+  root_path: /Workspace/Users/paul.chen@discounttire.com/.bundle/${var.app_name}/${bundle.target}
 sync:
   # DAB syncs git-tracked files minus .gitignore, then applies include/exclude
   # (gitignore syntax). `.databricksignore` is a human/test mirror of this list
@@ -66,77 +63,76 @@ sync:
   # pyproject.toml / uv.lock / requirements.txt, LICENSE.txt / NOTICE.txt,
   # and the Help Center set under docs/ (catalogued *.md + images/ + screenshots/).
   include:
-    # app.yaml is .gitignored (it is rendered from app.yaml.template at deploy
-    # time with workspace-specific values).  Explicitly include it here so DAB
-    # uploads the rendered file on every `databricks bundle deploy` run.
-    - app.yaml
-    - src/mcp-server/app.yaml
-    # Help Center serves markdown from docs/ at runtime (/api/help/docs/*).
-    # Force-include tracked Help Center files even if a broader ignore matches.
-    - docs/**
+  # app.yaml is .gitignored (it is rendered from app.yaml.template at deploy
+  # time with workspace-specific values).  Explicitly include it here so DAB
+  # uploads the rendered file on every `databricks bundle deploy` run.
+  - app.yaml
+  - src/mcp-server/app.yaml
+  # Help Center serves markdown from docs/ at runtime (/api/help/docs/*).
+  # Force-include tracked Help Center files even if a broader ignore matches.
+  - docs/**
   exclude:
-    - tests/
-    - data/
-    - .venv/
-    - .git/
-    - .github/
-    - .cursor/
-    - .claude/
-    - .planning/
-    - .hypothesis/
-    - .superpowers/
-    - .pytest_cache/
-    - htmlcov/
-    - logs/
-    - fastapi_session/
-    - mlruns/
-    - mlartifacts/
-    - artifacts/
-    - changelogs/
-    - ci/
-    - licenses/
-    - releases/
-    - scripts/
-    # DAB still *parses* resources/*.yml locally via `include:`; this only
-    # keeps the YAML out of the Apps workspace files tree.
-    - resources/
-    - "*.pid"
-    - "*.log"
-    - ".env"
-    - databricks.yml
-    - .databricksignore
-    - .gitignore
-    - .cursorrules
-    - .env.example
-    - .pre-commit-config.yaml
-    - pytest.ini
-    - commitlint.config.js
-    - mypy_baseline.txt
-    - /Makefile
-    - CHANGELOG.md
-    # Keep both README.md files. CLI 0.298 applies even `/README.md`
-    # recursively, which removes docs/README.md and 404s Help Overview.
-    - /CONTRIBUTING.md
-    - /AGENTS.md
-    - /CLAUDE.md
-    - /SECURITY.md
-    - /CONTRIBUTORS.md
-    - src/.coding_rules.md
-    # Do NOT exclude src/mcp-server/ — both apps share one workspace files tree;
-    # MCP `source_code_path` is ./src/mcp-server.
-    # Do NOT exclude src/jobs/ — graph_analytics_job.py is a workspace file.
-    # docs/ ships ONLY the Help Center runtime set (catalogued *.md +
-    # images/, screenshots/). Everything else under docs/ is internal-only.
-    - docs/sphinx/
-    - docs/superpowers/
-    - docs/diagrams/
-    - docs/pr47-neo4j-demo/
-    - docs/DEPLOY_CHECKLIST.md
-    - docs/PR_REVIEW_CHECKLIST.md
-    - docs/dab-reference.md
-    - docs/sizing.md
-    - docs/uc-mcp-connection-genie-one.md
-
+  - tests/
+  - data/
+  - .venv/
+  - .git/
+  - .github/
+  - .cursor/
+  - .claude/
+  - .planning/
+  - .hypothesis/
+  - .superpowers/
+  - .pytest_cache/
+  - htmlcov/
+  - logs/
+  - fastapi_session/
+  - mlruns/
+  - mlartifacts/
+  - artifacts/
+  - changelogs/
+  - ci/
+  - licenses/
+  - releases/
+  - scripts/
+  # DAB still *parses* resources/*.yml locally via `include:`; this only
+  # keeps the YAML out of the Apps workspace files tree.
+  - resources/
+  - "*.pid"
+  - "*.log"
+  - ".env"
+  - databricks.yml
+  - .databricksignore
+  - .gitignore
+  - .cursorrules
+  - .env.example
+  - .pre-commit-config.yaml
+  - pytest.ini
+  - commitlint.config.js
+  - mypy_baseline.txt
+  - /Makefile
+  - CHANGELOG.md
+  # Keep both README.md files. CLI 0.298 applies even `/README.md`
+  # recursively, which removes docs/README.md and 404s Help Overview.
+  - /CONTRIBUTING.md
+  - /AGENTS.md
+  - /CLAUDE.md
+  - /SECURITY.md
+  - /CONTRIBUTORS.md
+  - src/.coding_rules.md
+  # Do NOT exclude src/mcp-server/ — both apps share one workspace files tree;
+  # MCP `source_code_path` is ./src/mcp-server.
+  # Do NOT exclude src/jobs/ — graph_analytics_job.py is a workspace file.
+  # docs/ ships ONLY the Help Center runtime set (catalogued *.md +
+  # images/, screenshots/). Everything else under docs/ is internal-only.
+  - docs/sphinx/
+  - docs/superpowers/
+  - docs/diagrams/
+  - docs/pr47-neo4j-demo/
+  - docs/DEPLOY_CHECKLIST.md
+  - docs/PR_REVIEW_CHECKLIST.md
+  - docs/dab-reference.md
+  - docs/sizing.md
+  - docs/uc-mcp-connection-genie-one.md
 variables:
   # ── App names ──────────────────────────────────────────────────────
   # Single source of truth for the deployed app names.  Overridden by
@@ -148,20 +144,18 @@ variables:
   mcp_app_name:
     description: "Databricks Apps name for the MCP companion server"
     default: "mcp-ontobricks"
-
   warehouse_id:
     description: "SQL Warehouse ID for query execution"
-    default: "d2096aa075ad44a3"
+    default: "b20f70f71c2f52e2"
   registry_catalog:
     description: "Unity Catalog catalog for the domain registry"
-    default: "benoit_cayla"
+    default: "quickstart_catalog"
   registry_schema:
     description: "Unity Catalog schema for the domain registry"
-    default: "ontobricks_030"
+    default: "multi_agent_schema"
   registry_volume:
     description: "Volume name for the domain registry"
-    default: "registry"
-
+    default: "observability"
   # ── Lakebase resource binding (Autoscaling-only) ────────────────
   # OntoBricks targets **Lakebase Autoscaling** exclusively (the
   # default tier for every instance created after 2026-03-12). The
@@ -211,7 +205,7 @@ variables:
     default: "ontobricks-app"
   lakebase_branch:
     description: "Branch id within the project (resource segment after ``…/branches/``, e.g. ``production``)"
-    default: "v030"
+    default: "production"
   lakebase_database_resource_segment:
     description: "Final segment of Postgres API ``name`` (``db-…``) for the Apps ``postgres.database`` path — from ``list-databases``, not ``datname``"
     # Example: row with ``status.postgres_database`` ``ontobricks_registry`` (or
@@ -229,11 +223,10 @@ variables:
     #   databricks postgres list-databases "projects/ontobricks-app/branches/production" -o json | python3 -c "import json,sys;[print(r['name'].split('/')[-1], (r.get('status')or{}).get('postgres_database')) for r in json.load(sys.stdin)]"
     #
     # Replace ``ontobricks-app`` / ``production`` with your ``lakebase_project`` / ``lakebase_branch`` when they differ.
-    default: "db-8u4l-0na72ub5sp"
+    default: "databricks_postgres"
   lakebase_registry_schema:
     description: "OntoBricks registry schema inside Postgres (``LAKEBASE_SCHEMA`` in app.yaml)"
     default: "ontobricks_registry"
-
 resources:
   apps:
     # ── Dev sandbox app (FastAPI UI) ────────────────────────────
@@ -243,23 +236,22 @@ resources:
       source_code_path: .
       # App ACL (not top-level bundle permissions — those reject CAN_USE; see #134).
       permissions:
-        - level: CAN_MANAGE
-          user_name: ${workspace.current_user.userName}
-        - level: CAN_USE
-          group_name: users
+      - level: CAN_MANAGE
+        user_name: ${workspace.current_user.userName}
+      - level: CAN_USE
+        group_name: users
       resources:
-        - name: sql-warehouse
-          description: "SQL Warehouse for executing queries and metadata operations"
-          sql_warehouse:
-            id: ${var.warehouse_id}
-            permission: CAN_USE
-        - name: volume
-          description: "Unity Catalog Volume for the OntoBricks domain registry"
-          uc_securable:
-            securable_type: "VOLUME"
-            securable_full_name: "${var.registry_catalog}.${var.registry_schema}.${var.registry_volume}"
-            permission: WRITE_VOLUME
-
+      - name: sql-warehouse
+        description: "SQL Warehouse for executing queries and metadata operations"
+        sql_warehouse:
+          id: ${var.warehouse_id}
+          permission: CAN_USE
+      - name: volume
+        description: "Unity Catalog Volume for the OntoBricks domain registry"
+        uc_securable:
+          securable_type: "VOLUME"
+          securable_full_name: "${var.registry_catalog}.${var.registry_schema}.${var.registry_volume}"
+          permission: WRITE_VOLUME
     # ── MCP companion server ────────────────────────────────────
     # FastMCP server exposing OntoBricks Digital Twin tools to the
     # Databricks Playground. Deployed from ``src/mcp-server`` (its own
@@ -273,23 +265,22 @@ resources:
       source_code_path: ./src/mcp-server
       # App ACL (not top-level bundle permissions — those reject CAN_USE; see #134).
       permissions:
-        - level: CAN_MANAGE
-          user_name: ${workspace.current_user.userName}
-        - level: CAN_USE
-          group_name: users
+      - level: CAN_MANAGE
+        user_name: ${workspace.current_user.userName}
+      - level: CAN_USE
+        group_name: users
       resources:
-        - name: sql-warehouse
-          description: "SQL Warehouse for executing queries and metadata operations"
-          sql_warehouse:
-            id: ${var.warehouse_id}
-            permission: CAN_USE
-        - name: volume
-          description: "Unity Catalog Volume for the OntoBricks domain registry"
-          uc_securable:
-            securable_type: "VOLUME"
-            securable_full_name: "${var.registry_catalog}.${var.registry_schema}.${var.registry_volume}"
-            permission: WRITE_VOLUME
-
+      - name: sql-warehouse
+        description: "SQL Warehouse for executing queries and metadata operations"
+        sql_warehouse:
+          id: ${var.warehouse_id}
+          permission: CAN_USE
+      - name: volume
+        description: "Unity Catalog Volume for the OntoBricks domain registry"
+        uc_securable:
+          securable_type: "VOLUME"
+          securable_full_name: "${var.registry_catalog}.${var.registry_schema}.${var.registry_volume}"
+          permission: WRITE_VOLUME
 targets:
   # Legacy unsuffixed targets — still valid via
   # ``DAB_TARGET=dev-lakebase make deploy``. New instances use
@@ -301,7 +292,6 @@ targets:
   dev:
     mode: development
     default: true
-
   # Sandbox with the Lakebase Postgres registry backend bound
   # (Autoscaling-only). Uses the Apps ``postgres`` resource type
   # with ``branch`` + ``database`` resource paths — both must be
@@ -318,24 +308,24 @@ targets:
       apps:
         ontobricks_dev_app:
           resources:
-            - name: postgres
-              description: "Lakebase Autoscaling Postgres database for the OntoBricks registry"
-              postgres:
-                branch: projects/${var.lakebase_project}/branches/${var.lakebase_branch}
-                database: projects/${var.lakebase_project}/branches/${var.lakebase_branch}/databases/${var.lakebase_database_resource_segment}
-                permission: "CAN_CONNECT_AND_CREATE"
-            # Neo4j is optional and configured post-deploy in Settings → Neo4j
-            # (Databricks secret scope/key at runtime). Do NOT bind an Apps
-            # secret resource here — a missing workspace secret fails
-            # ``terraform apply`` on first deploy (GH #136). The unbound
-            # ``neo4j-password`` declaration in ``app.yaml.template`` remains
-            # for legacy ``NEO4J_PASSWORD`` / Apps UI binding only.
-            # See docs/pr47-neo4j-demo/secret-configuration.md.
+          - name: postgres
+            description: "Lakebase Autoscaling Postgres database for the OntoBricks registry"
+            postgres:
+              branch: projects/${var.lakebase_project}/branches/${var.lakebase_branch}
+              database: projects/${var.lakebase_project}/branches/${var.lakebase_branch}/databases/${var.lakebase_database_resource_segment}
+              permission: "CAN_CONNECT_AND_CREATE"
+              # Neo4j is optional and configured post-deploy in Settings → Neo4j
+              # (Databricks secret scope/key at runtime). Do NOT bind an Apps
+              # secret resource here — a missing workspace secret fails
+              # ``terraform apply`` on first deploy (GH #136). The unbound
+              # ``neo4j-password`` declaration in ``app.yaml.template`` remains
+              # for legacy ``NEO4J_PASSWORD`` / Apps UI binding only.
+              # See docs/pr47-neo4j-demo/secret-configuration.md.
         mcp_ontobricks_app:
           resources:
-            - name: postgres
-              description: "Lakebase Autoscaling Postgres database for the OntoBricks registry"
-              postgres:
-                branch: projects/${var.lakebase_project}/branches/${var.lakebase_branch}
-                database: projects/${var.lakebase_project}/branches/${var.lakebase_branch}/databases/${var.lakebase_database_resource_segment}
-                permission: "CAN_CONNECT_AND_CREATE"
+          - name: postgres
+            description: "Lakebase Autoscaling Postgres database for the OntoBricks registry"
+            postgres:
+              branch: projects/${var.lakebase_project}/branches/${var.lakebase_branch}
+              database: projects/${var.lakebase_project}/branches/${var.lakebase_branch}/databases/${var.lakebase_database_resource_segment}
+              permission: "CAN_CONNECT_AND_CREATE"

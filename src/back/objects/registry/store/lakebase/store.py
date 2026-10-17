@@ -699,7 +699,27 @@ class LakebaseRegistryStore(RegistryStore):
             )
         except Exception as exc:  # noqa: BLE001
             logger.exception("Lakebase initialise failed")
-            return False, f"Failed to initialise Lakebase registry: {exc}"
+            # DDL failures are commonly caused by a missing USAGE/CREATE
+            # grant on the configured schema.  Do not hide that actionable
+            # detail behind the generic "Registry initialization failed"
+            # response.  The diagnostic is best-effort because the original
+            # failure may also have been a transient connection error.
+            detail = ""
+            try:
+                diagnostic = self.check_permissions()
+                checks = diagnostic.get("checks", [])
+                failed = [
+                    check.get("detail")
+                    for check in checks
+                    if check.get("status") == "error" and check.get("detail")
+                ]
+                if failed:
+                    detail = " Permission diagnostic: " + " ".join(failed)
+                elif diagnostic.get("error"):
+                    detail = f" Permission diagnostic failed: {diagnostic['error']}"
+            except Exception:  # noqa: BLE001
+                logger.debug("Could not collect Lakebase permission diagnostics", exc_info=True)
+            return False, f"Failed to initialise Lakebase registry: {exc}.{detail}"
 
     def grant_app_permissions(
         self, *, app_names: List[str], uc_catalog: str = ""

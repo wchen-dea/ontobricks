@@ -54,6 +54,9 @@ case "$MODE" in
         exit $?
         ;;
     provision)
+        _preflight_require_file "$CONFIG_FILE"
+        # shellcheck disable=SC1090
+        . "$CONFIG_FILE"
         _preflight_begin "Lakebase provisioning prerequisites"
         _preflight_require_cmd databricks "install Databricks CLI ≥ 0.250.0"
         _preflight_require_cmd python3

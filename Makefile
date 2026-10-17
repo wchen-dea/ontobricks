@@ -12,7 +12,7 @@
 CONFIG := scripts/deploy.config.sh
 
 .PHONY: help install test test-cov scenario-campaign run dev prod setup format lint clean \
-        deploy deploy-dry-run deploy-volume deploy-no-run \
+        deploy deploy-dry-run deploy-volume deploy-no-run shutdown \
         bootstrap-perms bootstrap-lakebase \
         bundle-validate bundle-summary deploy-check \
         render-app-yaml
@@ -50,6 +50,7 @@ help:
 	@echo "    make deploy-dry-run      - Run ALL pre-deploy checks (preflight/validate/resources), no changes"
 	@echo "    make deploy-volume       - Deploy + start the dev sandbox app (Volume-only backend)"
 	@echo "    make deploy-no-run       - Deploy without starting the app (Lakebase target)"
+	@echo "    make shutdown            - Stop both configured Databricks apps"
 	@echo "    make render-app-yaml     - Re-render app.yaml from template + config"
 	@echo "    make bootstrap-perms     - Grant app SP CAN_MANAGE on itself + CAN_MANAGE_RUN on the analytics job"
 	@echo "    make bootstrap-lakebase  - Grant the app SP USAGE/DML on the Lakebase registry schema"
@@ -173,6 +174,17 @@ deploy-volume:
 deploy-no-run:
 	chmod +x scripts/deploy.sh
 	unset APP_NAME MCP_APP_NAME REGISTRY_SCHEMA LAKEBASE_REGISTRY_SCHEMA LAKEBASE_REGISTRY_DATABASE APP_LAKEBASE_SCHEMA APP_LAKEBASE_DATABASE; scripts/deploy.sh --no-run
+
+shutdown:
+	@. ./$(CONFIG) && \
+	  status=0; \
+	  for app in "$$APP_NAME" "$$MCP_APP_NAME"; do \
+	    echo "Stopping Databricks app: $$app"; \
+	    if ! databricks apps stop "$$app"; then \
+	      status=1; \
+	    fi; \
+	  done; \
+	  exit $$status
 
 render-app-yaml:
 	@echo "Rendering app.yaml from app.yaml.template + $(CONFIG)..."

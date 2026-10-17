@@ -49,28 +49,30 @@ DEFAULT_INSTANCE_ID="${DEFAULT_INSTANCE_ID:-08x}"
 # Databricks CLI profile (`databricks auth profiles`). Leave empty to use
 # the CLI default profile. Exported as DATABRICKS_CONFIG_PROFILE for all
 # `databricks` invocations when this file is sourced (make deploy, bootstrap, …).
-DEFAULT_DATABRICKS_PROFILE="${DEFAULT_DATABRICKS_PROFILE-DEFAULT}"
+DEFAULT_DATABRICKS_PROFILE="${DEFAULT_DATABRICKS_PROFILE-dev}"
 
 # SQL Warehouse
-DEFAULT_WAREHOUSE_ID="d2096aa075ad44a3"
+DEFAULT_WAREHOUSE_ID="b20f70f71c2f52e2"
 
 # Unity Catalog
-DEFAULT_REGISTRY_CATALOG="benoit_cayla"
+DEFAULT_REGISTRY_CATALOG="quickstart_catalog"
 # UC schema for the Volume registry
-DEFAULT_REGISTRY_SCHEMA="ontobricks_demo_08_repository"
-DEFAULT_REGISTRY_VOLUME="registry"
+DEFAULT_REGISTRY_SCHEMA="multi_agent_schema"
+DEFAULT_REGISTRY_VOLUME="observability"
 
 # Lakebase Autoscaling project + branch
-DEFAULT_LAKEBASE_PROJECT="ontobricks-demo-08-registry"
+DEFAULT_LAKEBASE_PROJECT="ontobricks-app"
 DEFAULT_LAKEBASE_BRANCH="production"
 # Postgres database (datname) on the shared Lakebase instance — the value of
 # status.postgres_database from list-databases (underscores OK). Do NOT copy the
 # hyphenated database_id from the resource path name; those differ when the
 # datname contains underscores (API uses hyphens only in database_id / RFC-1123).
 # Each app gets its own SCHEMA inside this database.
-DEFAULT_LAKEBASE_DATABASE="ontobricks_demo_08_registry_db"
+DEFAULT_LAKEBASE_DATABASE="databricks_postgres"
 # Postgres schema inside the Lakebase database, Each instance should have its own schema for isolation.
-DEFAULT_LAKEBASE_SCHEMA="ontobricks_demo_08_registry_sc"
+# Registry tables live in their own schema; ``ontobricks_graph`` is reserved
+# for the graph engine schema configured separately in the application.
+DEFAULT_LAKEBASE_SCHEMA="ontobricks_registry"
 # Example — reuse existing schema: DEFAULT_LAKEBASE_SCHEMA="ontobricks_demo"
 
 # ── 0c. Derived defaults (auto-computed — do NOT edit) ────────────────

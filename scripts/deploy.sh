@@ -299,10 +299,13 @@ if $IS_LAKEBASE; then
         info "Resolved db-… segment: ${LAKEBASE_DATABASE_RESOURCE_SEGMENT} (from database '${LAKEBASE_DATABASE}')"
     fi
 
-    case "$LAKEBASE_DATABASE_RESOURCE_SEGMENT" in
-        db-*) : ;;
-        *) warn "LAKEBASE_DATABASE_RESOURCE_SEGMENT='${LAKEBASE_DATABASE_RESOURCE_SEGMENT}' does not look like a 'db-…' id." ;;
-    esac
+    # Lakebase database resource ids are not guaranteed to use a `db-` prefix.
+    # For example, this workspace exposes `databricks-postgres`. Validate the
+    # value as a path segment instead of rejecting valid hyphenated ids.
+    if [[ -z "$LAKEBASE_DATABASE_RESOURCE_SEGMENT" ||
+          "$LAKEBASE_DATABASE_RESOURCE_SEGMENT" == */* ]]; then
+        warn "LAKEBASE_DATABASE_RESOURCE_SEGMENT='${LAKEBASE_DATABASE_RESOURCE_SEGMENT}' is not a valid database path segment."
+    fi
 
     # Patch the _dab_var_overrides entry now that the segment is known
     # (the array was built before resolution, so the entry was empty).

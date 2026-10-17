@@ -44,16 +44,15 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # scripts/bootstrap/ → scripts/ → repo root (one level was wrong after the reorg — #133).
 cd "$SCRIPT_DIR/../.."
 
-# Preflight CLI auth + tooling before any API calls.
-chmod +x scripts/_internal/check-deploy-prerequisites.sh
-scripts/_internal/check-deploy-prerequisites.sh --provision
+# shellcheck disable=SC1091
+source scripts/deploy.config.sh
 
 # ── Defaults ────────────────────────────────────────────────────────────────
-DEFAULT_NAME="ontobricks-demo"
+DEFAULT_NAME="databricks_postgres"
 DEFAULT_CAPACITY="CU_2"
 DEFAULT_BRANCH="production"
-DEFAULT_DATABASE="ontobricks_demo"
-DEFAULT_PROFILE="DEFAULT"
+DEFAULT_DATABASE="databricks_postgres"
+DEFAULT_PROFILE="${DATABRICKS_CONFIG_PROFILE:-DEFAULT}"
 DEFAULT_WAIT=120
 DRY_RUN=false
 
@@ -77,6 +76,12 @@ while [[ $# -gt 0 ]]; do
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
+
+# Preflight CLI auth + tooling before any API calls. The selected profile must
+# also be visible to the shared prerequisite checker.
+export DATABRICKS_CONFIG_PROFILE="$PROFILE"
+chmod +x scripts/_internal/check-deploy-prerequisites.sh
+scripts/_internal/check-deploy-prerequisites.sh --provision
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 _log() { echo "[setup-lakebase] $*"; }
@@ -143,13 +148,16 @@ else
   _log "  NOTE: The Databricks UI 'New project' button uses a different API that is"
   _log "        NOT compatible with the Synced Tables API. This script uses the correct one."
   PAYLOAD=$(printf '{"name":"%s","capacity":"%s","enable_pg_native_login":true}' "$NAME" "$CAPACITY")
-  RESULT=$(curl -sf -X POST "$HOST/api/2.0/database/instances" \
+   RESULT=$(curl -sS -w '\n__HTTP_STATUS__:%{http_code}' -X POST "$HOST/api/2.0/database/instances" \
     -H "Authorization: Bearer $TOKEN" \
     -H "Content-Type: application/json" \
-    -d "$PAYLOAD" 2>&1) || {
-      ERR_MSG=$(echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('message','unknown'))" 2>/dev/null || echo "$RESULT")
-      _err "Failed to create instance: $ERR_MSG"
-    }
+     -d "$PAYLOAD" 2>&1) || true
+   HTTP_STATUS=$(printf '%s\n' "$RESULT" | sed -n 's/^__HTTP_STATUS__:\([0-9][0-9][0-9]\)$/\1/p' | tail -1)
+   RESULT_BODY=$(printf '%s\n' "$RESULT" | sed '/^__HTTP_STATUS__:[0-9][0-9][0-9]$/d')
+   if [[ -z "$HTTP_STATUS" || "$HTTP_STATUS" -ge 400 ]]; then
+     ERR_MSG=$(printf '%s' "$RESULT_BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('message') or d.get('error') or d)" 2>/dev/null || printf '%s' "$RESULT_BODY")
+     _err "Failed to create instance (HTTP ${HTTP_STATUS:-unknown}): ${ERR_MSG:-no response body}"
+   fi
 
   _ok "Instance creation request accepted."
 

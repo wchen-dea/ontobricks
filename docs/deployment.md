@@ -416,7 +416,7 @@ Deployment uses **Databricks Asset Bundles** to deploy both the main app and the
 
 ```bash
 # Create the project (once per workspace):
-./scripts/bootstrap/setup-lakebase.sh --name ontobricks-demo --capacity CU_2
+./scripts/bootstrap/setup-lakebase.sh
 
 # The script prints the db-… resource id at the end. Set
 # DEFAULT_LAKEBASE_PROJECT / DEFAULT_LAKEBASE_DATABASE in deploy.config.sh;
@@ -1096,7 +1096,7 @@ databricks current-user me
 
 ```bash
 # Create the project via the correct API (synced-tables-compatible):
-./scripts/bootstrap/setup-lakebase.sh --name ontobricks-demo --capacity CU_2
+./scripts/bootstrap/setup-lakebase.sh
 
 # Copy DEFAULT_LAKEBASE_PROJECT / DEFAULT_LAKEBASE_DATABASE into deploy.config.sh
 # (deploy.sh resolves the db-… segment; optional: LAKEBASE_DATABASE_RESOURCE_SEGMENT)
