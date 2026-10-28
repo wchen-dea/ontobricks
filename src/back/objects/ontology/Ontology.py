@@ -927,6 +927,10 @@ class Ontology:
         - ``"parse"`` → :meth:`build_parse_owl_success_payload`
         - ``"load_file"`` → :meth:`build_load_owl_file_success_payload`
         """
+        # Generated OWL may include a short explanation or Markdown fencing.
+        # Normalize it at the service boundary so every ingestion path, including
+        # the wizard's /ontology/parse-owl request, parses the same Turtle content.
+        owl_content = Ontology.clean_owl_output(owl_content)
         result = Ontology.parse_owl(owl_content, extract_advanced=True)
         (
             ontology_info,

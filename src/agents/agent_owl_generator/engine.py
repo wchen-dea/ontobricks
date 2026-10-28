@@ -77,6 +77,23 @@ def _count_owl_classes(turtle: str) -> int:
     return len(_OWL_CLASS_DECL_RE.findall(turtle or ""))
 
 
+def _validate_generated_owl(content: str) -> tuple[str, Optional[str]]:
+    """Normalize and parse generated OWL before returning it to the caller.
+
+    The apply endpoint uses the same parser. Validating here prevents a task
+    from being reported as complete when its OWL will fail during auto-apply.
+    """
+    from back.core.w3c.owl.OntologyParser import OntologyParser
+    from back.objects.ontology.Ontology import Ontology
+
+    turtle = Ontology.clean_owl_output(content)
+    try:
+        OntologyParser(turtle)
+    except Exception as exc:
+        return content, str(exc)
+    return content, None
+
+
 # =====================================================
 # Data classes
 # =====================================================
@@ -811,6 +828,7 @@ def run_agent(
         else:
             # ---- Agent produced a text response ----
             content = extract_message_content(llm_response)
+            content, parse_error = _validate_generated_owl(content)
             starts_with_prefix = content.strip().startswith("@prefix")
             logger.info(
                 "Iteration %d: agent produced text output — %d chars, starts_with_@prefix=%s",
@@ -865,6 +883,33 @@ def run_agent(
                     "to recover",
                     iteration + 1,
                 )
+                return result
+
+            if parse_error:
+                logger.warning(
+                    "Iteration %d: generated OWL failed parser validation: %s",
+                    iteration + 1,
+                    parse_error,
+                )
+                if iteration < MAX_ITERATIONS - 1:
+                    notify("Generated OWL was invalid — asking the agent to retry…")
+                    messages.append({"role": "assistant", "content": content})
+                    messages.append({
+                        "role": "user",
+                        "content": (
+                            "Your previous ontology failed Turtle/OWL parser validation. "
+                            "Regenerate the COMPLETE ontology as valid Turtle starting "
+                            "with @prefix. Check every prefix, URI, quote, bracket, "
+                            "and statement terminator. Output ONLY Turtle with no "
+                            "prose or Markdown fences."
+                        ),
+                    })
+                    continue
+                result.error = (
+                    "Generated OWL failed parser validation and could not be repaired "
+                    f"within the iteration budget: {parse_error}"
+                )
+                logger.error("Agent: invalid final OWL after parser validation")
                 return result
 
             result.steps.append(

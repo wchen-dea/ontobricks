@@ -74,7 +74,7 @@ setup:
 
 run:
 	@echo "Starting OntoBricks (FastAPI)..."
-	. .venv/bin/activate && python run.py
+	uv run --frozen --extra lakebase --extra pitfalls python run.py
 
 test:
 	@echo "Running tests..."

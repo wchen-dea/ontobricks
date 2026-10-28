@@ -97,3 +97,21 @@ class TestTruncationGuard:
         result = _run(lambda *a, **k: _truncated())
         assert result.success is False
         assert "truncat" in (result.error or "").lower()
+
+
+class TestGeneratedOwlValidation:
+    def test_invalid_then_valid_output_recovers(self):
+        result = _run([
+            _complete(":Customer a owl:Class ."),
+            _complete(),
+        ])
+
+        assert result.success is True
+        assert result.owl_content == _COMPLETE_TURTLE
+        assert result.iterations == 2
+
+    def test_persistent_invalid_output_fails_before_completion(self):
+        result = _run(lambda *a, **k: _complete(":Customer a owl:Class ."))
+
+        assert result.success is False
+        assert "parser validation" in (result.error or "").lower()

@@ -723,6 +723,20 @@ class TestIngestOwl:
         assert r["success"]
         assert "ontology" in r
 
+    def test_ingest_owl_cleans_generated_markdown(self, domain_session):
+        content = """Generated ontology:
+```turtle
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix : <http://test.org/ontology#> .
+:Customer a owl:Class .
+```
+"""
+
+        result = Ontology(domain_session).ingest_owl(content, outcome="parse")
+
+        assert result["success"]
+        assert result["stats"]["classes"] == 1
+
     def test_ingest_owl_load_file(self, domain_session, sample_owl_content):
         r = Ontology(domain_session).ingest_owl(
             sample_owl_content,

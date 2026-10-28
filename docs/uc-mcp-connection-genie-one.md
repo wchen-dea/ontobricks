@@ -68,7 +68,7 @@ The MCP endpoint is always:
 https://<mcp-app-url>/mcp
 ```
 
-Example: `https://mcp-ontobricks-08x-2508734981122804.aws.databricksapps.com/mcp`
+Example: `https://mcp-ontobricks-08x-4225037891036111.aws.databricksapps.com/mcp`
 
 ---
 
@@ -80,7 +80,7 @@ Fill these once; every command below uses them.
 export PROFILE=DEFAULT
 export WORKSPACE_HOST=https://fe-vm-bcayla-demos.cloud.databricks.com   # no trailing slash
 export MCP_APP=mcp-ontobricks-08x
-export MCP_APP_URL=https://mcp-ontobricks-08x-2508734981122804.aws.databricksapps.com
+export MCP_APP_URL=https://mcp-ontobricks-08x-4225037891036111.aws.databricksapps.com
 export CONN_NAME=ontobricks_mcp_08x
 export SP_DISPLAY_NAME=ontobricks-mcp-08x-uc-connection
 export SP_APP_ID=   # filled in step 1
@@ -346,7 +346,7 @@ app `mcp-ontobricks-08x`:
 
 | Object | Name |
 |--------|------|
-| MCP app URL | `https://mcp-ontobricks-08x-2508734981122804.aws.databricksapps.com` |
+| MCP app URL | `https://mcp-ontobricks-08x-4225037891036111.aws.databricksapps.com` |
 | HTTP connection | `ontobricks_mcp_08x` (OAuth M2M, `/mcp`, Active) |
 | Service principal | `ontobricks-mcp-08x-uc-connection` |
 | MCP Service | `benoit_cayla.ontobricks_demo_08x_sc.ontobricks_mcp` |

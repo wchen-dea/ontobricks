@@ -1,0 +1,35 @@
+## Normalize generated OWL before ingestion
+
+Context: The ontology generation wizard could display generated Turtle but fail when applying it because the `/ontology/parse-owl` ingestion path did not remove Markdown fences or natural-language preambles.
+
+Changes:
+
+1. `src/back/objects/ontology/Ontology.py`
+   Normalize generated OWL at the ingestion boundary before parsing.
+2. `tests/units/ontology/test_ontology_service.py`
+   Add regression coverage for fenced Turtle with a prose preamble.
+
+Modified files:
+- `src/back/objects/ontology/Ontology.py`
+- `tests/units/ontology/test_ontology_service.py`
+- `changelogs/v0.8.1/pchen_2026-10-28.log`
+
+Tests: `uv run --frozen pytest -q -m "not scenario"` → 5940 passed, 304 skipped, 6 deselected
+
+## Validate generated OWL before accepting it
+
+Context: Generated Turtle could be reported as successful before the real OWL
+parser accepted it, causing failures later during ingestion or auto-apply.
+
+Changes:
+
+1. `src/agents/agent_owl_generator/engine.py`
+   Validate normalized generated OWL with `OntologyParser` and retry invalid output within the iteration budget.
+2. `tests/units/agents/test_agent_owl_generator_truncation.py`
+   Add coverage for invalid-then-valid recovery and persistent parser failure.
+
+Modified files:
+- `src/agents/agent_owl_generator/engine.py`
+- `tests/units/agents/test_agent_owl_generator_truncation.py`
+
+Tests: `uv run --frozen pytest -q tests/units/agents/test_agent_owl_generator_truncation.py` → 5 passed

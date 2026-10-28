@@ -13,6 +13,24 @@ Python package deployed separately from the main OntoBricks web application.
 
 ## Workflow
 
+## How clients connect
+
+AI systems and Databricks Genie agents connect to `mcp-ontobricks-08x` through
+the Model Context Protocol (MCP), typically using its Streamable HTTP endpoint
+at `/mcp`. They do not call the OntoBricks REST API directly. The MCP server
+translates tool calls into REST requests to the main `ontobricks-08x`
+application, which provides the registry and knowledge-graph data.
+
+```text
+AI client or Genie agent
+        │ MCP
+        ▼
+mcp-ontobricks-08x
+        │ REST API (/api/v1/*)
+        ▼
+ontobricks-08x
+```
+
 The MCP server follows a **two-step workflow**:
 
 1. **Choose a domain** — call `list_domains` to see available graph viewers with descriptions, then `select_domain` to activate one. Only domains with the **API / MCP** flag enabled in OntoBricks are listed.
