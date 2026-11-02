@@ -33,3 +33,21 @@ Modified files:
 - `tests/units/agents/test_agent_owl_generator_truncation.py`
 
 Tests: `uv run --frozen pytest -q tests/units/agents/test_agent_owl_generator_truncation.py` → 5 passed
+
+## Prevent R2RML regeneration from hanging the UI
+
+Context: R2RML generation ran synchronously inside an asynchronous FastAPI route, while the browser had no request timeout or HTTP error handling. A stalled request left the Mapping page displaying “Regenerating R2RML...” indefinitely.
+
+Changes:
+
+1. `src/api/routers/internal/mapping.py`
+   Run CPU-bound R2RML generation in a worker thread so it does not block the application event loop.
+2. `src/front/static/mapping/js/mapping-r2rml.js`
+   Add a 120-second timeout, handle non-2xx responses, surface generation errors, and preserve the generated content in `MappingState`.
+
+Modified files:
+- `src/api/routers/internal/mapping.py`
+- `src/front/static/mapping/js/mapping-r2rml.js`
+- `changelogs/v0.8.1/pchen_2026-10-28.log`
+
+Tests: `uv run --frozen pytest -q tests/units/api/test_routes.py -k r2rml` → 2 passed, 77 deselected; `node --check src/front/static/mapping/js/mapping-r2rml.js` → passed

@@ -4,6 +4,8 @@ Internal API -- Mapping JSON endpoints.
 Moved from app/frontend/mapping/routes.py during the front/back split.
 """
 
+import asyncio
+
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import Response
 
@@ -186,7 +188,7 @@ async def generate_r2rml(session_mgr: SessionManager = Depends(get_session_manag
     domain = get_domain(session_mgr)
 
     m = Mapping(domain)
-    r2rml_content = m.generate_r2rml()
+    r2rml_content = await asyncio.to_thread(m.generate_r2rml)
     return {"success": True, "r2rml": r2rml_content, "stats": m.get_mapping_stats()}
 
 

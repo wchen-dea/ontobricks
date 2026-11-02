@@ -6,6 +6,45 @@
 // R2RML SECTION - R2RML Generation and Preview
 // =====================================================
 
+const R2RML_GENERATION_TIMEOUT_MS = 120000;
+
+async function fetchR2RMLGeneration() {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(
+        () => controller.abort(),
+        R2RML_GENERATION_TIMEOUT_MS
+    );
+
+    try {
+        const response = await fetch('/mapping/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            signal: controller.signal
+        });
+
+        if (!response.ok) {
+            let detail = `Request failed (${response.status})`;
+            try {
+                const errorResult = await response.json();
+                detail = errorResult.detail || errorResult.message || detail;
+            } catch (error) {
+                // Keep the HTTP status when the server did not return JSON.
+            }
+            throw new Error(detail);
+        }
+
+        return await response.json();
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            throw new Error('R2RML generation timed out after 120 seconds');
+        }
+        throw error;
+    } finally {
+        window.clearTimeout(timeoutId);
+    }
+}
+
 function hideR2RMLLoadingOverlay() {
     const overlay = document.getElementById('r2rmlLoadingOverlay');
     if (overlay) overlay.style.display = 'none';
@@ -51,19 +90,13 @@ async function generateR2RMLPreview() {
         
         // If no saved R2RML, generate new one
         console.log('R2RML Section: No saved R2RML, generating new...');
-        const response = await fetch('/mapping/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin'
-        });
-        
-        const result = await response.json();
+        const result = await fetchR2RMLGeneration();
         
         if (result.success && result.r2rml) {
             r2rmlPreview.value = result.r2rml;
             MappingState.r2rmlContent = result.r2rml;
         } else {
-            r2rmlPreview.value = '';
+            throw new Error(result.message || 'The server returned no R2RML content');
         }
     } catch (error) {
         console.error('Error loading R2RML:', error);
@@ -83,19 +116,19 @@ async function forceRegenerateR2RML() {
     }
     
     try {
-        const response = await fetch('/mapping/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin'
-        });
-        
-        const result = await response.json();
+        const result = await fetchR2RMLGeneration();
         
         if (result.success && result.r2rml) {
             r2rmlPreview.value = result.r2rml;
+            MappingState.r2rmlContent = result.r2rml;
+            return result.r2rml;
         }
+
+        throw new Error(result.message || 'The server returned no R2RML content');
     } catch (error) {
         console.error('Error generating R2RML:', error);
+        r2rmlPreview.placeholder = error.message;
+        throw error;
     }
 }
 

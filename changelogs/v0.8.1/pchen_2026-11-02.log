@@ -1,0 +1,61 @@
+## Add AI ontology context reference
+
+Context: The repository needed a single AI-oriented reference covering its implemented RDF, OWL, SHACL, SPARQL, mapping, reasoning, graph-storage, and AI integration conventions, together with a clearly labeled retail and Discotun Tire domain blueprint.
+
+Changes:
+
+1. `docs/ai-ontology-context.md`
+   Added an AI grounding guide for OntoBricks ontology and knowledge-graph behavior, safe SPARQL use, retail concepts, and proposed Discotun Tire classes, properties, constraints, and query patterns.
+2. `changelogs/v0.8.1/pchen_2026-11-02.log`
+   Recorded the documentation change for version 0.8.1.
+
+Modified files:
+- `docs/ai-ontology-context.md`
+- `changelogs/v0.8.1/pchen_2026-11-02.log`
+
+Tests: `uv run --frozen pytest -q -m "not scenario"` — did not complete within the available execution window; documentation validation passed, including Turtle parsing and `git diff --check`.
+
+## Add ontology synonym glossary
+
+Context: AI users need common aliases and domain terminology to improve ontology search and grounding without replacing canonical RDF terms.
+
+Changes:
+
+1. `docs/ai-ontology-context.md`
+   Added a synonym glossary covering ontology, knowledge-graph, retail, and Discotun Tire terms, including a distinction between sales and purchase orders.
+
+Modified files:
+- `docs/ai-ontology-context.md`
+- `changelogs/v0.8.1/pchen_2026-11-02.log`
+
+Tests: `uv run --frozen pytest -q -m "not scenario"` → 5,942 passed, 304 skipped, 6 deselected, 23 warnings in 64.24s.
+
+## Add abbreviation glossary
+
+Context: AI users need standard expansions for the protocols, RDF formats, ontology languages, and retail identifiers used throughout the ontology context.
+
+Changes:
+
+1. `docs/ai-ontology-context.md`
+   Added an abbreviation glossary for AI, RDF, OWL, SHACL, SPARQL, MCP, R2RML, SKU, UPC, and related terms.
+
+Modified files:
+- `docs/ai-ontology-context.md`
+- `changelogs/v0.8.1/pchen_2026-11-02.log`
+
+Tests: `uv run --frozen pytest -q -m "not scenario"` → 5,942 passed, 304 skipped, 6 deselected, 23 warnings in 41.32s.
+
+## Add enterprise AI ontology blueprint
+
+Context: AI systems need an enterprise implementation approach for a Discount Tire-style ontology that addresses modular modeling, governance, identity, temporal data, mappings, reasoning, retrieval, privacy, evaluation, and rollout.
+
+Changes:
+
+1. `docs/ai-ontology-context.md`
+   Added a proposed enterprise implementation blueprint with governance, modular ontology design, canonical identifiers, mappings, AI retrieval contracts, safety controls, evaluation, and staged rollout guidance.
+
+Modified files:
+- `docs/ai-ontology-context.md`
+- `changelogs/v0.8.1/pchen_2026-11-02.log`
+
+Tests: `uv run --frozen pytest -q -m "not scenario"` → 5,942 passed, 304 skipped, 6 deselected, 23 warnings in 40.46s.
