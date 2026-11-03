@@ -261,7 +261,7 @@ class TestScenario1GenerateLive:
         gen_btn.click()
 
         # The wizard polls /tasks/<id> in-page and, on success, auto-applies the
-        # OWL to the session via /ontology/parse-owl. We poll the SESSION truth
+        # OWL to the session via /ontology/import-owl. We poll the SESSION truth
         # (/ontology/load) so we're decoupled from front-end timing.
         deadline = time.monotonic() + _GEN_TIMEOUT_S
         classes: list = []

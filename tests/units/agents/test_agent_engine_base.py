@@ -84,6 +84,25 @@ class TestCallServingEndpoint:
         assert "tools" not in payload
 
     @patch("agents.engine_base.call_llm_with_retry")
+    def test_gpt6_uses_reasoning_model_request_contract(self, mock_retry):
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {"choices": []}
+        mock_retry.return_value = mock_resp
+
+        call_serving_endpoint(
+            "https://h",
+            "t",
+            "databricks-gpt-6-luna",
+            [{"role": "user", "content": "generate OWL"}],
+            max_tokens=8192,
+        )
+
+        payload = mock_retry.call_args[0][2]
+        assert payload["max_completion_tokens"] == 8192
+        assert "max_tokens" not in payload
+        assert "temperature" not in payload
+
+    @patch("agents.engine_base.call_llm_with_retry")
     def test_strips_trailing_slash(self, mock_retry):
         mock_resp = MagicMock()
         mock_resp.json.return_value = {}

@@ -40,6 +40,17 @@ def _looks_unsupported(body_text: str, param: str) -> bool:
     )
 
 
+def _is_reasoning_chat_endpoint(endpoint_name: str) -> bool:
+    """Return whether *endpoint_name* uses the newer reasoning-model contract.
+
+    Databricks-hosted GPT-6 endpoints use ``max_completion_tokens`` and reject
+    the legacy ``temperature`` parameter.  Keep this scoped to the endpoint
+    family so existing Claude/Llama and provisioned endpoints retain their
+    established request shape.
+    """
+    return endpoint_name.lower().startswith("databricks-gpt-6-")
+
+
 # =====================================================
 # Shared data class
 # =====================================================
@@ -88,10 +99,13 @@ def call_serving_endpoint(
     }
 
     banned = _unsupported_params(endpoint_name)
-    payload: Dict[str, Any] = {
-        "messages": messages,
-        "max_tokens": max_tokens,
-    }
+    reasoning_contract = _is_reasoning_chat_endpoint(endpoint_name)
+    payload: Dict[str, Any] = {"messages": messages}
+    if reasoning_contract:
+        payload["max_completion_tokens"] = max_tokens
+        banned.add("temperature")
+    else:
+        payload["max_tokens"] = max_tokens
     if "temperature" not in banned and temperature is not None:
         payload["temperature"] = temperature
     if tools:
@@ -118,11 +132,14 @@ def call_serving_endpoint(
         body_text = response.text if response is not None else ""
         # Detect and strip parameters the model rejects, then retry once.
         dropped: List[str] = []
-        for param in ("temperature",):
+        for param in ("temperature", "max_tokens"):
             if param in payload and _looks_unsupported(body_text, param):
                 banned.add(param)
                 payload.pop(param, None)
                 dropped.append(param)
+        if "max_tokens" in dropped:
+            payload["max_completion_tokens"] = max_tokens
+            dropped.append("max_completion_tokens")
         if not dropped:
             raise
         logger.warning(

@@ -336,6 +336,8 @@ def test_data_quality_tabs_do_not_override_the_shared_density():
 
 def test_ontology_generate_uses_the_card_integrated_tab_pattern():
     template = _read(ONTOLOGY_WIZARD_TEMPLATE)
+    assert 'id="wizardApplyBtn"' in template
+    assert 'data-action="wizard-apply-ontology"' in template
     assert '<div class="card h-100">' in template
     assert '<div class="card-body p-0 ob-tabs-wrap">' in template
     assert (
@@ -346,6 +348,16 @@ def test_ontology_generate_uses_the_card_integrated_tab_pattern():
     content_tag = template[template.rindex("<div", 0, anchor) : anchor]
     assert "tab-content p-3" in content_tag
     assert "ob-tab-content" not in content_tag
+
+
+def test_ontology_wizard_preserves_generated_result_for_manual_apply_retry():
+    wizard_js = _read(REPO_ROOT / "src/front/static/ontology/js/ontology-wizard.js")
+
+    assert "setWizardApplyEnabled(true);" in wizard_js
+    assert "Review the generated ontology and click Apply Ontology to retry." in wizard_js
+    assert "fetch('/ontology/import-owl'" in wizard_js
+    assert "result.message || result.detail || 'Unknown error'" in wizard_js
+    assert "if (!confirmed) return;" in wizard_js
 
 
 def test_ontology_import_uses_the_card_integrated_tab_pattern():

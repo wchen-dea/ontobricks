@@ -329,6 +329,7 @@ async function monitorWizardTask(taskId) {
  */
 async function showWizardResults(result) {
     wizardGeneratedOWL = result.owl_content;
+    setWizardApplyEnabled(true);
     
     // Persist OWL to sessionStorage so it survives page navigation (retry on failure)
     try {
@@ -340,15 +341,11 @@ async function showWizardResults(result) {
     
     const applied = await applyWizardOntologySilent();
     if (applied) {
-        clearWizardPreview();
         if (typeof refreshOntologyStatus === 'function') {
             refreshOntologyStatus();
         }
         if (typeof loadOntologyFromSession === 'function') {
             await loadOntologyFromSession();
-        }
-        if (typeof SidebarNav !== 'undefined' && typeof SidebarNav.switchTo === 'function') {
-            SidebarNav.switchTo('map');
         }
 
         // Build convergence summary message from task result or local log
@@ -371,9 +368,17 @@ async function showWizardResults(result) {
         }
         showNotification(successMsg, 'success');
     } else {
-        showNotification('Auto-apply failed. Click Generate again to retry.', 'warning');
-        clearWizardPreview();
+        setWizardApplyEnabled(true);
+        showNotification(
+            'Auto-apply failed. Review the generated ontology and click Apply Ontology to retry.',
+            'warning'
+        );
     }
+}
+
+function setWizardApplyEnabled(enabled) {
+    const button = document.getElementById('wizardApplyBtn');
+    if (button) button.disabled = !enabled;
 }
 
 /**
@@ -383,20 +388,30 @@ async function showWizardResults(result) {
 async function applyWizardOntologySilent() {
     if (!wizardGeneratedOWL) return false;
     try {
-        const response = await fetch('/ontology/parse-owl', {
+        const response = await fetch('/ontology/import-owl', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ content: wizardGeneratedOWL }),
             credentials: 'same-origin'
         });
         const result = await response.json();
-        if (result.success) {
-            return true;
+        if (response.ok && result.success) {
+            const loaded = await fetch('/ontology/load', { credentials: 'same-origin' });
+            const loadedResult = await loaded.json();
+            const classes = loadedResult.config?.classes || [];
+            if (loadedResult.success && classes.length > 0) {
+                return true;
+            }
+            showNotification('Ontology import returned success, but no classes were persisted.', 'error');
+            return false;
         }
-        showNotification('Error applying ontology: ' + (result.message || 'Unknown error'), 'error');
+        showNotification(
+            'Error applying ontology: ' + (result.message || result.detail || 'Unknown error'),
+            'error'
+        );
         return false;
     } catch (error) {
-        console.error('[Wizard] Apply error:', error);
+        console.error('Error applying ontology:', error);
         showNotification('Error applying ontology: ' + error.message, 'error');
         return false;
     }
@@ -763,6 +778,7 @@ function downloadWizardOWL() {
  */
 function clearWizardPreview() {
     wizardGeneratedOWL = null;
+    setWizardApplyEnabled(false);
     _wizardIterationLog = [];
     sessionStorage.removeItem(WIZARD_OWL_KEY);
     sessionStorage.removeItem(WIZARD_STATS_KEY);
@@ -785,46 +801,25 @@ async function applyWizardOntology() {
         confirmClass: 'btn-success',
         icon: 'check-lg'
     });
-    
     if (!confirmed) return;
-    
+
     try {
-        // Use the existing parse-owl endpoint to import
-        const response = await fetch('/ontology/parse-owl', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: wizardGeneratedOWL }),
-            credentials: 'same-origin'
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('Ontology applied successfully!', 'success');
-            
-            // Clear the preview
+        const applied = await applyWizardOntologySilent();
+        if (applied) {
             clearWizardPreview();
-            
-            // Refresh ontology status
+            showNotification('Ontology applied successfully!', 'success');
             if (typeof refreshOntologyStatus === 'function') {
                 refreshOntologyStatus();
             }
-            
-            // Reload ontology state
             if (typeof loadOntologyFromSession === 'function') {
                 await loadOntologyFromSession();
             }
-            
-            // Navigate to Map view to see the result
-            if (typeof SidebarNav !== 'undefined' && typeof SidebarNav.switchTo === 'function') {
-                SidebarNav.switchTo('map');
-            }
-
         } else {
-            showNotification('Error applying ontology: ' + result.message, 'error');
+            setWizardApplyEnabled(true);
         }
     } catch (error) {
         console.error('[Wizard] Apply error:', error);
+        setWizardApplyEnabled(true);
         showNotification('Error applying ontology: ' + error.message, 'error');
     }
 }
